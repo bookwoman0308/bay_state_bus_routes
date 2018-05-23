@@ -1,0 +1,4 @@
+name = Bay State Bus Routes
+description = A page that ingests MBTA API data and displays bus routes
+core = 7.x
+package = bay_state

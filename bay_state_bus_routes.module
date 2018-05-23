@@ -1,0 +1,94 @@
+<?php
+
+
+/**
+ * Implements hook_help()
+ */
+function bay_state_bus_routes_help($path, $arg) {
+  switch ($path) {
+  case "admin/help#bay_state_bus_routes":
+    return '<p>' . t("Displays bus routes for MBTA.");
+    break;
+  }
+}
+
+/**
+ * Implements hook_menu()
+ */
+function bay_state_bus_routes_menu() {
+
+    $items = array();
+
+    $items['bay-state'] = array(
+      'title' => 'Bus Routes',
+      'description' => 'Schedules from MBTA',
+      'page callback' => 'bay_state_bus_routes_display',
+      'access arguments' => array('access content'),
+    );
+    return $items;
+  }
+
+
+
+function bay_state_bus_routes_display() {
+
+  _get_bus_routes();
+
+  $output = '';
+  $output = _render_route_markup($output);
+
+  $content['mbta_markup'] = array(
+    '#type' => 'markup',
+    '#markup' => $output,
+  );
+ 
+  return $content;
+}
+
+
+function _get_bus_routes() {
+
+  //$route_id = 'Red';
+  //$url = 'https://api-v3.mbta.com/schedules?filter[route]=' . $route_id . '/';
+  //$url = 'https://api-v3.mbta.com/schedules?filter[route]=Red';
+
+  $url = 'https://api-v3.mbta.com/routes/';
+
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($ch, CURLOPT_URL, $url);
+  $response = curl_exec($ch);
+  curl_close($ch);
+
+  $decoded_response = json_decode($response, true);
+
+  $route_array = $decoded_response['data'];
+
+  $route_attribute_array = array();
+  foreach ($route_array as $key) {
+     $route_attribute_array[] = array(
+       'type' => $key['attributes']['description'],
+       'long_name' => $key['attributes']['long_name'],
+       'bg_color' => $key['attributes']['color'],
+       'text_color' => $key['attributes']['text_color'],
+       'route_id' => $key['id'],
+       );
+  }
+
+  return $route_attribute_array;
+}
+
+
+function _render_route_markup($output) {
+
+  $output .= '<p>Rapid Transit</p>';
+  foreach ($route_attribute_array as $row) {
+    if ($row['type'] == 'Rapid Transit') {
+      $output = '<p style="background-color:#' . $row['bg_color'] . '; color:#' . $row['text_color'] . ';"><a href="https://mbta.com/schedules/' . $row['route_id'] . '/schedule">' . $row['long_name'] . '</a></p>';
+
+    }
+  }
+  
+  return $output;
+}
