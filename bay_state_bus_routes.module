@@ -86,7 +86,7 @@ function _render_route_markup($output, $route_attribute_array) {
   $output .= '<p>Rapid Transit</p>';
   foreach ($route_attribute_array as $row) {
     if ($row['type'] == 'Rapid Transit') {
-      $output = '<p style="background-color:#' . $row['bg_color'] . '; color:#' . $row['text_color'] . ';"><a href="https://mbta.com/schedules/' . $row['route_id'] . '/schedule">' . $row['long_name'] . '</a></p>';
+      $output = '<p style="background-color:#' . $row['bg_color'] . '"><a style="color:#' . $row['text_color'] . '" href="https://mbta.com/schedules/' . $row['route_id'] . '/schedule">' . $row['long_name'] . '</a></p>';
 
     }
   }
