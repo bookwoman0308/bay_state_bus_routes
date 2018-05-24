@@ -32,10 +32,11 @@ function bay_state_bus_routes_menu() {
 
 function bay_state_bus_routes_display() {
 
-  _get_bus_routes();
+  $routes = array();
+  $routes = _get_bus_routes();
 
   $output = '';
-  $output = _render_route_markup($output);
+  $output = _render_route_markup($output, $routes);
 
   $content['mbta_markup'] = array(
     '#type' => 'markup',
@@ -80,7 +81,7 @@ function _get_bus_routes() {
 }
 
 
-function _render_route_markup($output) {
+function _render_route_markup($output, $route_attribute_array) {
 
   $output .= '<p>Rapid Transit</p>';
   foreach ($route_attribute_array as $row) {
