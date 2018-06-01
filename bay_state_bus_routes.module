@@ -20,7 +20,7 @@ function bay_state_bus_routes_menu() {
     $items = array();
 
     $items['bay-state'] = array(
-      'title' => 'Bus Routes',
+      'title' => 'MBTA Routes and Schedules',
       'description' => 'Schedules from MBTA',
       'page callback' => 'bay_state_bus_routes_display',
       'access arguments' => array('access content'),
@@ -33,7 +33,7 @@ function bay_state_bus_routes_menu() {
 function bay_state_bus_routes_display() {
 
   $routes = array();
-  $routes = _get_bus_routes();
+  $routes = _get_all_routes();
 
   $output = '';
   $output = _render_route_markup($output, $routes);
@@ -47,7 +47,7 @@ function bay_state_bus_routes_display() {
 }
 
 
-function _get_bus_routes() {
+function _get_all_routes() {
 
   //$route_id = 'Red';
   //$url = 'https://api-v3.mbta.com/schedules?filter[route]=' . $route_id . '/';
@@ -55,22 +55,28 @@ function _get_bus_routes() {
 
   $url = 'https://api-v3.mbta.com/routes/';
 
-  $ch = curl_init();
-  curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-  curl_setopt($ch, CURLOPT_URL, $url);
-  $response = curl_exec($ch);
-  curl_close($ch);
+  //Use drupal_http_request instead of CURL!
+  $options = array(
+    'method' => 'GET',
+    'headers' => array('Content-Type' => 'application/json'),
+  );
+  $response = drupal_http_request('https://api-v3.mbta.com/routes/', $options);
 
-  $decoded_response = json_decode($response, true);
+  $decoded_response = json_decode($response->data, true);
 
   $route_array = $decoded_response['data'];
 
   $route_attribute_array = array();
   foreach ($route_array as $key) {
+    if (!$long_name || $long_name = ' ') {
+        $long_name = $key['id'];
+    }
+    else {
+        $long_name = $key['attributes']['long_name'];
+    }
      $route_attribute_array[] = array(
        'type' => $key['attributes']['description'],
-       'long_name' => $key['attributes']['long_name'],
+       'long_name' => $long_name,
        'bg_color' => $key['attributes']['color'],
        'text_color' => $key['attributes']['text_color'],
        'route_id' => $key['id'],
