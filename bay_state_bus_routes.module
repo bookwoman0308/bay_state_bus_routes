@@ -112,6 +112,10 @@ function _get_all_routes($routes) {
     }
   }
 
+  else {
+    $route_attribute_array = array();
+  }
+
   return $route_attribute_array;
 }
 
