@@ -98,13 +98,20 @@ function _get_all_routes($routes) {
 
 function _render_route_markup($output, $route_attribute_array) {
 
-  $output .= '<p>Rapid Transit</p>';
-  foreach ($route_attribute_array as $row) {
-    if ($row['type'] == 'Rapid Transit') {
-      $output = '<p style="background-color:#' . $row['bg_color'] . '"><a style="color:#' . $row['text_color'] . '" href="https://mbta.com/schedules/' . $row['route_id'] . '/schedule">' . $row['long_name'] . '</a></p>';
+  //Identify the transit types from the API call, i.e. Rapid Transit, Local Bus, Ferry, etc.
+  $route_types = array_unique(array_column($route_attribute_array, 'type'));
 
+  $output .= '<div class="route">';
+  foreach ($route_types as $key => $value) {
+    $output .= '<p style="font-size: 14px;"><strong>' . $value . '</strong></p>';
+    foreach ($route_attribute_array as $row) {
+      if ($row['type'] == $value) {
+        $output = '<p style="background-color:#' . $row['bg_color'] . '"><a style="color:#' . $row['text_color'] . '" href="https://mbta.com/schedules/' . $row['route_id'] . '/schedule">' . $row['long_name'] . '</a></p>';
+      }
     }
   }
+
+  $output .= '</div>';
   
   return $output;
 }
