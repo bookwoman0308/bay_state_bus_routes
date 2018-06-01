@@ -138,7 +138,23 @@ function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
   $output = '';
 
   //Make the API call to get the schedule for the specific route id
-  //TODO
+  $url = 'https://api-v3.mbta.com/schedules?filter[route]=' . $route_id; //use route_id that is passed through to render
+ 
+  $options = array(
+    'method' => 'GET',
+    'headers' => array('Content-Type' => 'application/json'),
+  );
+  $response = drupal_http_request($url, $options);
+
+  if (($response->code == 200) && ($response->status_message == 'OK')){
+    $decoded_response = json_decode($response->data, true);
+    $schedules = $decoded_response['data'];
+    $output = _render_schedule_markup($output, $route_id, $schedules);
+  }
+
+  else {
+    $output = '<p>There was an error retrieving scheduling data from the MBTA API. Please try again later.</p>';
+  }
 
   $form = array();
 
@@ -148,3 +164,13 @@ function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
 
   return $form;
 }
+
+function _render_schedule_markup($output, $route_id, $schedules) {
+
+  $output .= '<p>Today\'s schedule for Route ID: ' . $route_id . '</p>';
+
+  //TODO: process schedules received from API call and render the data on the page
+
+   return $output;
+}
+
