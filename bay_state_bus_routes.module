@@ -33,10 +33,17 @@ function bay_state_bus_routes_menu() {
 function bay_state_bus_routes_display() {
 
   $routes = array();
-  $routes = _get_all_routes();
+  $routes = _get_all_routes($routes);
 
   $output = '';
-  $output = _render_route_markup($output, $routes);
+
+  if (empty($routes)) {
+    $output = 'An error occurred with retrieving route data from the MBTA API. Please try back again later.';
+  }
+
+  else {
+    $output = _render_route_markup($output, $routes);
+  }
 
   $content['mbta_markup'] = array(
     '#type' => 'markup',
@@ -47,7 +54,7 @@ function bay_state_bus_routes_display() {
 }
 
 
-function _get_all_routes() {
+function _get_all_routes($routes) {
 
   //$route_id = 'Red';
   //$url = 'https://api-v3.mbta.com/schedules?filter[route]=' . $route_id . '/';
@@ -62,18 +69,19 @@ function _get_all_routes() {
   );
   $response = drupal_http_request('https://api-v3.mbta.com/routes/', $options);
 
-  $decoded_response = json_decode($response->data, true);
+  if (($response->code == 200) && ($response->status_message == 'OK')) {
+    $decoded_response = json_decode($response->data, true);
 
-  $route_array = $decoded_response['data'];
+    $route_array = $decoded_response['data'];
 
-  $route_attribute_array = array();
-  foreach ($route_array as $key) {
-    if (!$long_name || $long_name = ' ') {
+    $route_attribute_array = array();
+    foreach ($route_array as $key) {
+      if (!$long_name || $long_name = ' ') {
         $long_name = $key['id'];
-    }
-    else {
+      }
+      else {
         $long_name = $key['attributes']['long_name'];
-    }
+     }
      $route_attribute_array[] = array(
        'type' => $key['attributes']['description'],
        'long_name' => $long_name,
@@ -81,6 +89,7 @@ function _get_all_routes() {
        'text_color' => $key['attributes']['text_color'],
        'route_id' => $key['id'],
        );
+    }
   }
 
   return $route_attribute_array;
