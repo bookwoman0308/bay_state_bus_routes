@@ -104,6 +104,8 @@ function _get_all_routes($routes) {
 
 function _render_route_markup($output, $route_attribute_array) {
 
+  drupal_add_css(drupal_get_path('module', 'bay_state_bus_routes') . '/css/styles.css');
+
   //Identify the transit types from the API call, i.e. Rapid Transit, Local Bus, Ferry, etc.
   $route_types = array_unique(array_column($route_attribute_array, 'type'));
 
