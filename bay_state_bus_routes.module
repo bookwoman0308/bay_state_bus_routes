@@ -25,6 +25,12 @@ function bay_state_bus_routes_menu() {
       'page callback' => 'bay_state_bus_routes_display',
       'access arguments' => array('access content'),
     );
+    $items['bay-state/schedule/%'] = array(
+      'title' => 'Route Schedule',
+      'page callback' => 'bay_state_bus_routes_schedule_page',
+      'access arguments' => array('access content'),
+      'page arguments' => array(2),  //pass route_id
+    );
     return $items;
   }
 
@@ -106,7 +112,8 @@ function _render_route_markup($output, $route_attribute_array) {
     $output .= '<p style="font-size: 14px;"><strong>' . $value . '</strong></p>';
     foreach ($route_attribute_array as $row) {
       if ($row['type'] == $value) {
-        $output = '<p style="background-color:#' . $row['bg_color'] . '"><a style="color:#' . $row['text_color'] . '" href="https://mbta.com/schedules/' . $row['route_id'] . '/schedule">' . $row['long_name'] . '</a></p>';
+        $go_to = '/bay-state/schedule/' . $row['route_id'];   //send route_id to page callback
+        $output .= '<p style="background-color:#' . $row['bg_color'] . '"><a style="color:#' . $row['text_color'] . '" href="' . $go_to . '">' . $row['long_name'] . '</a></p>';
       }
     }
   }
@@ -114,4 +121,28 @@ function _render_route_markup($output, $route_attribute_array) {
   $output .= '</div>';
   
   return $output;
+}
+
+function bay_state_bus_routes_schedule_page($route_id) {
+
+  $form_var = drupal_get_form('bay_state_bus_routes_schedule_form', $route_id);
+
+  return $form_var;
+
+}
+
+function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
+
+  $output = '';
+
+  //Make the API call to get the schedule for the specific route id
+  //TODO
+
+  $form = array();
+
+  $form['route']['schedule'] = array(
+     '#markup' => $output,
+      );
+
+  return $form;
 }
