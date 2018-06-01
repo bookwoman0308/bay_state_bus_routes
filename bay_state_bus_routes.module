@@ -1,5 +1,10 @@
 <?php
-
+ /**
+ * @file
+ * MBTA Routes and Schedules
+ *
+ * Displays a page of routes with associated background/text colors and links to the specific schedule for the route.
+ */
 
 /**
  * Implements hook_help()
@@ -7,7 +12,7 @@
 function bay_state_bus_routes_help($path, $arg) {
   switch ($path) {
   case "admin/help#bay_state_bus_routes":
-    return '<p>' . t("Displays bus routes for MBTA.");
+    return '<p>' . t("Displays routes and schedules for MBTA.");
     break;
   }
 }
@@ -34,8 +39,12 @@ function bay_state_bus_routes_menu() {
     return $items;
   }
 
-
-
+/**
+ * Page callback that displays the MBTA routes, with associated markup.
+ *
+ * @param void
+ * @return $content
+ **/
 function bay_state_bus_routes_display() {
 
   $routes = array();
@@ -59,7 +68,12 @@ function bay_state_bus_routes_display() {
   return $content;
 }
 
-
+/**
+ * Page callback that displays the MBTA routes, with associated markup.
+ *
+ * @param $routes, an empty array
+ * @return $route_attribute_array, which will either contain the route attributes or be empty if the API call failed
+ **/
 function _get_all_routes($routes) {
 
   //$route_id = 'Red';
@@ -101,7 +115,12 @@ function _get_all_routes($routes) {
   return $route_attribute_array;
 }
 
-
+/**
+ * Page callback from individual route page. Passes the call to display the form.
+ *
+ * @param $output, which contains markup code, and $route_attribute_array, the route data from the API
+ * @return $output, the markup code that will render all of the route names with their associated colors
+ **/
 function _render_route_markup($output, $route_attribute_array) {
 
   drupal_add_css(drupal_get_path('module', 'bay_state_bus_routes') . '/css/styles.css');
@@ -125,14 +144,26 @@ function _render_route_markup($output, $route_attribute_array) {
   return $output;
 }
 
+/**
+ * Page callback from individual route page. Passes the call to display the form.
+ *
+ * @param $route_id
+ * @return $form
+ **/
 function bay_state_bus_routes_schedule_page($route_id) {
 
-  $form_var = drupal_get_form('bay_state_bus_routes_schedule_form', $route_id);
+  $form = drupal_get_form('bay_state_bus_routes_schedule_form', $route_id);
 
-  return $form_var;
+  return $form;
 
 }
 
+/**
+ * Implements hook_form(). It displays the schedule data for the individual route.
+ *
+ * @param $route_id
+ * @return $form
+ **/
 function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
 
   $output = '';
@@ -165,6 +196,12 @@ function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
   return $form;
 }
 
+/**
+ * Implements hook_form(). It displays the schedule data for the individual route.
+ *
+ * @param $output, an empty string, the $route_id, and the $schedules data from the API
+ * @return $output, which contains markup that renders the schedule information for the route
+ **/
 function _render_schedule_markup($output, $route_id, $schedules) {
 
   $output .= '<p>Today\'s schedule for Route ID: ' . $route_id . '</p>';
@@ -188,6 +225,12 @@ function _render_schedule_markup($output, $route_id, $schedules) {
   return $output;
 }
 
+/**
+ * Implements hook_form(). It displays the schedule data for the individual route.
+ *
+ * @param $arrival_time, a string in ISO 8601 standard format
+ * @return $time_display, a string more intelligible to a human living in the US
+ **/
 function _format_time_value($arrival_time) {
 
   //Swagger documentation says date format is ISO 8601 standard so use DateTime object to store
@@ -200,7 +243,7 @@ function _format_time_value($arrival_time) {
   $first_string = substr($usa_hour, 0, 1);
   $usa_hour = ($first_string == 0) ? substr($usa_hour, -1) : $usa_hour;
   //Assemble the display time
-  $time_display = $usa_hour . ':' . $time_obj->format('i') . ' ' . $time_of_day;
+  $time_display = $usa_hour . ':' . $time_obj->format('i') . ' ' . $time_of_day;  //i.e. 5 a.m., 10 a.m., 4 p.m., 9 p.m.
 
   return $time_display;
 }
