@@ -1,4 +1,7 @@
 <?php
+
+use Drupal\bay_state_bus_routes\MBTA as MBTA;
+
  /**
  * @file
  * MBTA Routes and Schedules
@@ -76,22 +79,11 @@ function bay_state_bus_routes_display() {
  **/
 function _get_all_routes($routes) {
 
-  //$route_id = 'Red';
-  //$url = 'https://api-v3.mbta.com/schedules?filter[route]=' . $route_id . '/';
-  //$url = 'https://api-v3.mbta.com/schedules?filter[route]=Red';
+  $api_route_call = new MBTA('routes');
+  $response = $api_route_call->getRoutes();
 
-  $url = 'https://api-v3.mbta.com/routes/';
-
-  //Use drupal_http_request instead of CURL!
-  $options = array(
-    'method' => 'GET',
-    'headers' => array('Content-Type' => 'application/json'),
-  );
-  $response = drupal_http_request('https://api-v3.mbta.com/routes/', $options);
-
-  if (($response->code == 200) && ($response->status_message == 'OK')) {
+  if ($api_route_call->checkResponse($response)) {
     $decoded_response = json_decode($response->data, true);
-
     $route_array = $decoded_response['data'];
 
     $route_attribute_array = array();
@@ -173,18 +165,14 @@ function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
   $output = '';
 
   //Make the API call to get the schedule for the specific route id
-  $url = 'https://api-v3.mbta.com/schedules?filter[route]=' . $route_id; //use route_id that is passed through to render
- 
-  $options = array(
-    'method' => 'GET',
-    'headers' => array('Content-Type' => 'application/json'),
-  );
-  $response = drupal_http_request($url, $options);
+  $api_schedule_call = new MBTA();
+  $api_schedule_call->setRouteID($route_id);  //use route_id that is passed through to render
+  $response = $api_schedule_call->getSchedules();
 
-  if (($response->code == 200) && ($response->status_message == 'OK')){
+  if ($api_schedule_call->checkResponse($response)) {
     $decoded_response = json_decode($response->data, true);
     $schedules = $decoded_response['data'];
-    $output = _render_schedule_markup($output, $route_id, $schedules);
+    $output = _render_schedule_markup($output, $route_id, $schedules, $api_schedule_call);
   }
 
   else {
@@ -201,12 +189,12 @@ function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
 }
 
 /**
- * Implements hook_form(). It displays the schedule data for the individual route.
+ * Renders the schedule data for the individual route.
  *
- * @param $output, an empty string, the $route_id, and the $schedules data from the API
+ * @param $output, an empty string, the $route_id, the $schedules data from the API, and a new object to use one of its methods
  * @return $output, which contains markup that renders the schedule information for the route
  **/
-function _render_schedule_markup($output, $route_id, $schedules) {
+function _render_schedule_markup($output, $route_id, $schedules, $MBTA_obj) {
 
   $output .= '<p>Today\'s schedule for Route ID: ' . $route_id . '</p>';
 
@@ -214,7 +202,7 @@ function _render_schedule_markup($output, $route_id, $schedules) {
 
   //Build the output row by row from the API data
   foreach ($schedules as $key) {
-    $arrival_time = _format_time_value($key['attributes']['arrival_time']); //The time string will be i.e. "2017-08-14T15:04:00-04:00"
+    $arrival_time = $MBTA_obj->renderTimeFormat($key['attributes']['arrival_time']); //The time string will be i.e. "2017-08-14T15:04:00-04:00"
     $vehicle_name = $key['relationships']['trip']['data']['id'];
     $stop_name = $key['relationships']['stop']['data']['id'];
     //If there are stops and vehicles with names instead of numbers, format them differently
@@ -227,27 +215,4 @@ function _render_schedule_markup($output, $route_id, $schedules) {
   }
 
   return $output;
-}
-
-/**
- * Implements hook_form(). It displays the schedule data for the individual route.
- *
- * @param $arrival_time, a string in ISO 8601 standard format
- * @return $time_display, a string more intelligible to a human living in the US
- **/
-function _format_time_value($arrival_time) {
-
-  //Swagger documentation says date format is ISO 8601 standard so use DateTime object to store
-  $time_obj = DateTime::createFromFormat(DateTime::ISO8601, $arrival_time);
-  //Format the time for users in the targeted time zone that does not use military time
-  $hour = $time_obj->format('H');  //i.e. 05, 10, 12, 16, 21
-  $time_of_day = ($hour >= 12) ? 'p.m.' : 'a.m.';
-  $usa_hour = ($hour > 12) ? ($hour - 12) : $hour;
-  $usa_hour = ($hour == 0) ? 12 : $usa_hour;  //i.e. 05, 10, 12, 4, 9
-  $first_string = substr($usa_hour, 0, 1);
-  $usa_hour = ($first_string == 0) ? substr($usa_hour, -1) : $usa_hour;
-  //Assemble the display time
-  $time_display = $usa_hour . ':' . $time_obj->format('i') . ' ' . $time_of_day;  //i.e. 5 a.m., 10 a.m., 4 p.m., 9 p.m.
-
-  return $time_display;
 }
