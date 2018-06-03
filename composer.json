@@ -1,7 +1,42 @@
 {
-    "require": {
+    "name": "bay_state/bay-state-project",
+    "description": "Drupal code using data from the Massachusetts Bay Transportation Authority API",
+    "type": "project",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+    "vendor-dir": "vendor"
     },
-    "require-dev": {
+    "author": [
+        {
+            "name": "Elissa Thomas",
+            "email": "ethomas08@gmail.com"
+        }
+    ],
+    "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packages.drupal.org/7"
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "bay_state/bay_state_bus_routes",
+        "version": "dev-master",
+        "type": "drupal-library",
+        "source": {
+          "url": "https://github.com/bookwoman0308/bay_state_bus_routes.git",
+          "type": "git",
+          "reference": "origin/master"
+        }
+      }
+    }
+    ],
+    "require": {
+      "drupal/drupal":"7.59",
+      "drupal/xautoload": "5.7"
+    },
+    "require-dev": { 
         "phpunit/phpunit": "3.7.*",
         "phpunit/dbunit": ">=1.2",
         "phpunit/phpunit-selenium": ">=1.2"
