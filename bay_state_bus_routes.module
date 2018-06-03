@@ -88,7 +88,8 @@ function _get_all_routes($routes) {
 
     $route_attribute_array = array();
     foreach ($route_array as $key) {
-      if (!$long_name || $long_name = ' ') {
+      $long_name = $key['attributes']['long_name'];
+      if ($long_name == '') {
         $long_name = $key['id'];
       }
       else {
