@@ -10,7 +10,7 @@ class MBTATest extends \PHPUnit_Framework_TestCase {
 
     $testTime = new MBTA();
 
-    $expectedResultTime = "3:04 p.m.";
+    $expectedResultTime = "3:04 pm";
 
     $this->assertEquals($expectedResultTime, $testTime->renderTimeFormat($arrivalTime));
    }
