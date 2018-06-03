@@ -79,7 +79,7 @@ function bay_state_bus_routes_display() {
  **/
 function _get_all_routes($routes) {
 
-  $api_route_call = new MBTA('routes');
+  $api_route_call = new MBTA();
   $response = $api_route_call->getRoutes();
 
   if ($api_route_call->checkResponse($response)) {
