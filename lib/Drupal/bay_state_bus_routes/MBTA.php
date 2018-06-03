@@ -92,14 +92,7 @@ class MBTA {
 
     $timeObj = DateTime::createFromFormat(DateTime::ISO8601, $arrivalTime);
     //Format the time for users in the targeted time zone that does not use military time
-    $hour = $timeObj->format('H');  //05, 10,  12,  16,  21
-    $period = ($hour >= 12) ? 'p.m.' : 'a.m.';
-    $usaHour = ($hour > 12) ? ($hour - 12) : $hour;
-    $usaHour = ($hour == 0) ? 12 : $usaHour;  //05,  10,  12,  4,  9
-    $firstString = substr($usaHour, 0, 1);
-    $usaHour = ($firstString == 0) ? substr($usaHour, -1) : $usaHour;
-    //Assemble the display time
-    $timeDisplay = $usaHour . ':' . $timeObj->format('i') . ' ' . $period;
+    $timeDisplay = $timeObj->format('g:i a');
     return $timeDisplay;
   }
 

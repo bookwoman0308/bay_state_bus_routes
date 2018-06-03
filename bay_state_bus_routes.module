@@ -173,7 +173,13 @@ function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
   if ($api_schedule_call->checkResponse($response)) {
     $decoded_response = json_decode($response->data, true);
     $schedules = $decoded_response['data'];
-    $output = _render_schedule_markup($output, $route_id, $schedules, $api_schedule_call);
+    if (!empty($schedules)) {
+      $output = _render_schedule_markup($output, $route_id, $schedules, $api_schedule_call);
+    }
+    else {
+      $date = date('F j, Y', time());
+      $output = '<p>There are no vehicles scheduled for route ' . $api_schedule_call->getRouteID() . ' today: ' . $date . '.</p>';
+    }
   }
 
   else {
