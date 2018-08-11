@@ -112,7 +112,7 @@ function _get_all_routes($routes) {
 /**
  *
  * Implements hook_theme
- * @return array containing the variables needed in the template file
+ * @return array containing the variables needed in the template files
  * 
  **/
 function bay_state_bus_routes_theme($existing, $type, $theme, $path) {
@@ -123,7 +123,14 @@ function bay_state_bus_routes_theme($existing, $type, $theme, $path) {
                 'route_attribute_array' => array(),
             ),
             'template' => 'transit',
-        )
+         ),
+        'mbta_timing' => array(
+            'variables' => array(
+                'schedule_attributes_array' => array(),
+                'route_id' => NULL,
+            ),
+            'template' => 'timing',
+         )
     );
 }
 
@@ -215,30 +222,30 @@ function bay_state_bus_routes_schedule_form($form, &$form_state, $route_id) {
 }
 
 /**
- * Renders the schedule data for the individual route.
+ * Renders the schedule data for the individual route using custom theming.
  *
  * @param $output, an empty string, the $route_id, the $schedules data from the API, and a new object to use one of its methods
  * @return $output, which contains markup that renders the schedule information for the route
  **/
 function _render_schedule_markup($output, $route_id, $schedules, $MBTA_obj) {
 
-  $output .= '<p>Today\'s schedule for Route ID: ' . $route_id . '</p>';
-
-  $render_row = array();
+  $schedule_attributes_array = array();
 
   //Build the output row by row from the API data
   foreach ($schedules as $key) {
-    $arrival_time = $MBTA_obj->renderTimeFormat($key['attributes']['arrival_time']); //The time string will be i.e. "2017-08-14T15:04:00-04:00"
-    $vehicle_name = $key['relationships']['trip']['data']['id'];
-    $stop_name = $key['relationships']['stop']['data']['id'];
-    //If there are stops and vehicles with names instead of numbers, format them differently
-    if (is_numeric($stop_name)) {
-      $output .= 'Vehicle ' . $vehicle_name . ' arrives at Stop ' . $stop_name . ' at ' . $arrival_time . '<br>';
-    }
-    else {
-      $output .= $vehicle_name . ' arrives at ' . $stop_name . ' stop at ' . $arrival_time . '<br>';
-    }
-  }
+    $schedule_attributes_array[] = array(
+       'arrival_time' => $MBTA_obj->renderTimeFormat($key['attributes']['arrival_time']),
+       'vehicle_name' => $key['relationships']['trip']['data']['id'],
+       'stop_name' => $key['relationships']['stop']['data']['id'],
+     );
+}
+
+  $variables = array(
+    'schedule_attributes_array' => $schedule_attributes_array,
+    'route_id' => $route_id
+  );
+
+  $output = theme('mbta_timing', $variables);
 
   return $output;
 }
