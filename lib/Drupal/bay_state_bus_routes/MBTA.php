@@ -15,6 +15,7 @@ class MBTA {
   private $routeID;
 
   CONST API_URL = 'https://api-v3.mbta.com/';
+  CONST API_KEY = '6d7970cabacd4881ac48a4863aa8b8d7';
 
   // Method declaration.
   /**
@@ -50,7 +51,7 @@ class MBTA {
 
     $options = array(
       'method' => 'GET',
-      'headers' => array('Content-Type' => 'application/json'),
+      'headers' => array('Content-Type' => 'application/json', 'Authorization' => self::API_KEY),
     );
   
     $response = drupal_http_request($url, $options);
@@ -69,7 +70,7 @@ class MBTA {
 
     $options = array(
       'method' => 'GET',
-      'headers' => array('Content-Type' => 'application/json'),
+      'headers' => array('Content-Type' => 'application/json', 'Authorization' => self::API_KEY),
     );
   
     $response = drupal_http_request($url, $options);
