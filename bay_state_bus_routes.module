@@ -110,32 +110,54 @@ function _get_all_routes($routes) {
 }
 
 /**
- * Page callback from individual route page. Passes the call to display the form.
+ *
+ * Implements hook_theme
+ * @return array containing the variables needed in the template file
+ * 
+ **/
+function bay_state_bus_routes_theme($existing, $type, $theme, $path) {
+    return array(
+        'mbta_colors' => array(
+            'variables' => array(
+                'route_types' => array(),
+                'route_attribute_array' => array(),
+            ),
+            'template' => 'transit',
+        )
+    );
+}
+
+
+/**
+ * Function uses custom theming to render the contents of the route attributes array. 
  *
  * @param $output, which contains markup code, and $route_attribute_array, the route data from the API
  * @return $output, the markup code that will render all of the route names with their associated colors
  **/
 function _render_route_markup($output, $route_attribute_array) {
 
-  drupal_add_css(drupal_get_path('module', 'bay_state_bus_routes') . '/css/styles.css');
-
   //Identify the transit types from the API call, i.e. Rapid Transit, Local Bus, Ferry, etc.
   $route_types = array_unique(array_column($route_attribute_array, 'type'));
 
-  $output .= '<div class="route">';
-  foreach ($route_types as $key => $value) {
-    $output .= '<p style="font-size: 14px;"><strong>' . $value . '</strong></p>';
-    foreach ($route_attribute_array as $row) {
-      if ($row['type'] == $value) {
-        $go_to = '/bay-state/schedule/' . $row['route_id'];   //send route_id to page callback
-        $output .= '<p style="background-color:#' . $row['bg_color'] . '"><a style="color:#' . $row['text_color'] . '" href="' . $go_to . '">' . $row['long_name'] . '</a></p>';
-      }
-    }
-  }
+  $variables = array(
+    'route_types' => $route_types,
+    'route_attribute_array' => $route_attribute_array
+  );
 
-  $output .= '</div>';
-  
+  $output = theme('mbta_colors', $variables);
+
   return $output;
+}
+
+/**
+ *
+ * Implements template_preprocess_HOOK in order to add the style sheet
+ *
+ **/
+function template_preprocess_bay_state_bus_routes_mbta_colors(&$variables) {
+
+  drupal_add_css(drupal_get_path('module', 'bay_state_bus_routes') . '/css/styles.css');
+
 }
 
 /**
